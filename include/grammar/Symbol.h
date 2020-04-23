@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <ostream>
 
 class Symbol {
 public:
@@ -28,6 +29,8 @@ public:
 
     bool operator==(const Symbol &s) const;
     bool operator!=(const Symbol &s) const;
+
+    friend std::ostream& operator<<(std::ostream &stream, const Symbol &s);
 private:
     struct Block{
         Block(const std::string &n, const std::string &p);
@@ -44,5 +47,5 @@ namespace std {
         size_t operator() (const Symbol &s) const;
     };
 }
-
+std::ostream& operator<<(std::ostream &stream, const Symbol &s);
 #endif //COMPILERS_LAB2_SYMBOL_H

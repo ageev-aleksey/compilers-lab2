@@ -7,12 +7,13 @@
 #include "grammar/Symbol.h"
 #include "grammar/Grammar.h"
 #include <unordered_set>
+#include <list>
 
 namespace algorithm {
     std::unordered_set<Symbol> removeBarrenSymbols(const Grammar &g);
     std::unordered_set<Symbol> removeUnreachableSymbols(const Grammar &g);
 
-    std::vector<Production> removeDirectRecursion(const std::vector<Production> &prods, const Symbol &epsilon, const Symbol &target);
+    std::list<Production> removeDirectRecursion(const std::unordered_set<Symbol> &nonTerminals, std::list<Production> &prods, const Symbol &epsilon, const Symbol &target);
     Grammar deleteRecursion(const Grammar &g);
     Grammar deleteDummySymbols(const Grammar &g);
 

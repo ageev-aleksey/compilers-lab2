@@ -5,6 +5,8 @@
 #include "grammar/algorithm.h"
 #include "grammar/GrammarException.h"
 #include <list>
+#include <iostream>
+
 bool contain( const std::unordered_set<Symbol> &set, const Symbol &s) {
     return set.find(s) != set.end();
 }
@@ -132,53 +134,55 @@ Grammar algorithm::deleteDummySymbols(const Grammar &g) {
     return b2.build();
 }
 
-std::vector<Production> algorithm::removeDirectRecursion(const std::vector<Production> &prods, const Symbol &epsilon, const Symbol &target) {
-    std::vector<Production> res_p;
+std::list<Production> algorithm::removeDirectRecursion(const std::unordered_set<Symbol> &nonTerminals, std::list<Production> &prods, const Symbol &epsilon, const Symbol &target) {
+    using lItr = std::list<Production>::iterator;
+    using clItr = std::list<Production>::const_iterator;
+    //std::list<Production> res_p;
     std::unordered_set<Symbol> processedNonTerminal;
-    for(Production p : prods) {
-        Symbol left = *p.left().begin();//current nonTerminal
+    for(Symbol left : nonTerminals) {
+        //Symbol left = *p.left().begin();//current nonTerminal
 //        if(contain(processedNonTerminal, left)) {//if this terminal was be processing
 //            continue;
 //        }
 
-        std::vector<size_t> recursiveProd;//indexes of recursive rules;
-        std::vector<size_t> nonRecursiveProd;//indexes of non recursive rules;
+        std::vector<clItr> recursiveProd;//indexes of recursive rules;
+        std::vector<clItr> nonRecursiveProd;//indexes of non recursive rules;
         //find all rules with left part: "left"
-        for(size_t i = 0; i < prods.size(); i++) {
-            if(*prods[i].left().begin() == left) {
-                if(*prods[i].right().begin() == left) {//this rule is recursive
-                    recursiveProd.push_back(i);
+        for(clItr p = prods.begin(); p != prods.end(); ++p) {
+            if(p->left().get(0) == left) {
+                if(p->right().get(0) == left) {//this rule is recursive
+                    recursiveProd.push_back(p);
                 } else { //this rule note recursive
-                    nonRecursiveProd.push_back(i);
+                    nonRecursiveProd.push_back(p);
                 }
             }
         }
         if(left != target) {
             //if this rule don't processed
-            for(size_t nri : recursiveProd) {
-                res_p.push_back(prods[nri]);
-            }
-            for(size_t nri : nonRecursiveProd) {
-                res_p.push_back(prods[nri]);
-            }
+//            for(clItr &nri : recursiveProd) {
+//                res_p.push_back(*nri);
+//            }
+//            for(clItr &nri : nonRecursiveProd) {
+//                res_p.push_back(*nri);
+//            }
             continue;
         }
         if(recursiveProd.empty()) {
             //not found recursive rule for left
             //copy non recursive rule without changes
-            for(size_t nri : nonRecursiveProd) {
-                res_p.push_back(prods[nri]);
-            }
+//            for(clItr &nri : nonRecursiveProd) {
+//                res_p.push_back(*nri);
+//            }
             continue;
         }
         Symbol stroke(left.name()+"'", left.pattern()+"'");
         //create new rules from recursive productions
-        for(size_t ri : recursiveProd) {
+        for(clItr &ri : recursiveProd) {
             std::vector<Symbol> leftPartRule;
             std::vector<Symbol> rightPartRule;
             leftPartRule.push_back(stroke);
-            for(size_t indexPR = 1; indexPR < prods[ri].right().size(); indexPR++) {
-                rightPartRule.push_back(prods[ri].right().get(indexPR));
+            for(size_t indexPR = 1; indexPR < ri->right().size(); indexPR++) {
+                rightPartRule.push_back(ri->right().get(indexPR));
             }
             rightPartRule.push_back(stroke);
             res_p.emplace_back(leftPartRule, rightPartRule);
@@ -186,11 +190,11 @@ std::vector<Production> algorithm::removeDirectRecursion(const std::vector<Produ
         //add epsilon-rule
         res_p.emplace_back(std::vector{stroke}, std::vector{epsilon});
         //create new rules from nonRecursive productions
-        for(size_t nri : nonRecursiveProd) {
+        for(clItr &nri : nonRecursiveProd) {
             std::vector<Symbol> leftPartRule;
             std::vector<Symbol> rightPartRule;
             leftPartRule.push_back(left);
-            for(const Symbol &s : prods[nri].right()) {
+            for(const Symbol &s : nri->right()) {
                 rightPartRule.push_back(s);
             }
             rightPartRule.push_back(stroke);
@@ -246,7 +250,7 @@ std::vector<Production> algorithm::removeDirectRecursion(const std::vector<Produ
 
 std::vector<std::list<Production>::iterator> findProductionsByLeft(Symbol left, std::list<Production> prods) {
     std::vector<std::list<Production>::iterator> res;
-    for(std::list<Production>::iterator itr = prods.begin(); itr != prods.end(); ++itr) {
+    for(auto itr = prods.begin(); itr != prods.end(); ++itr) {
         if(left == itr->left().get(0)) {
             res.push_back(itr);
         }
@@ -276,7 +280,7 @@ Grammar algorithm::deleteRecursion(const Grammar &g) {
     using lItr = std::list<Production>::iterator;
     std::vector<Symbol> nonTerminals;
     std::list<Production> productions;
-    for (const Symbol &s : g.terminals()) {
+    for (const Symbol &s : g.nonTerminals()) {
         nonTerminals.push_back(s);
     }
     for (const Production &p : g.productions()) {
@@ -284,18 +288,24 @@ Grammar algorithm::deleteRecursion(const Grammar &g) {
     }
     //Iterable on Ai
     for (size_t i = 0; i < nonTerminals.size(); i++) {
+
+        std::cout << "-----\n" << "CurrentNonTerminal: " << nonTerminals[i] << std::endl;
+
         std::vector<lItr> rules = findProductionsByLeft(nonTerminals[i], productions);
         //Iterable on Aj
         std::vector<lItr> mustRemoveRule;
         for (size_t j = 0; j < i; j++) {
             //Iterable on all rules type: Ai -> *
-            for (lItr p : rules) {
+            for (lItr &p : rules) {
+                std::cout << "processing Rule: " << *p << std::endl;
                 //detect rule type: Ai -> Aj g
                 if (p->right().get(0) == nonTerminals[j]) {
+                    std::cout << "  -- This rule a type: Ai -> Aj g " << std::endl;
                     std::vector<lItr> subRules = findProductionsByLeft(nonTerminals[j], productions);
                     for(const lItr &sub : subRules) {
                         //create new rule from current rule(p): apply substitution
                         Production newProd = substitutionFirstSymbolInRight(*p, *sub);
+                        std::cout << "  -- Created new Rule: " << newProd << std::endl;
                         productions.push_back(newProd);
                     }
                    mustRemoveRule.push_back(p);
@@ -305,6 +315,19 @@ Grammar algorithm::deleteRecursion(const Grammar &g) {
         for(lItr &p : mustRemoveRule) {
             productions.erase(p);
         }
-        productions = removeDirectRecursion(productions, g.epsilon(), nonTerminals[i]);
+        productions = removeDirectRecursion(g.nonTerminals(), productions, g.epsilon(), nonTerminals[i]);
     }
+
+    //build new equivalent grammar;
+    Grammar::Builder b;
+    b.setAxiom(g.axiom());
+    b.setEpsilon(g.epsilon());
+    for(const Production &p : productions) {
+        b.addNonTerminal(p.left().get(0));
+        b.addProduction(p);
+    }
+    for(const Symbol &s : g.terminals()) {
+        b.addTerminal(s);
+    }
+    return b.build();
 }

@@ -87,11 +87,11 @@ TEST(removeDirectRecursion, oneRecursion) {
     Symbol a{"a", "a"};
     Symbol e{"e", "e"};
 
-    std::vector<Production> p{
+    std::list<Production> p{
         Production(ProductionPart({ S }), ProductionPart({ S, a })),
         Production(ProductionPart({ S }), ProductionPart({ b, a }))
     };
-    std::vector<Production> res = algorithm::removeDirectRecursion(p, e, S);
+    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
     std::unordered_set<Production> ok {
         Production(ProductionPart({S}), ProductionPart({b, a, Ss})),
         Production(ProductionPart({Ss}), ProductionPart({ a, Ss })),
@@ -111,11 +111,11 @@ TEST(removeDirectRecursion, withoutRecursion) {
     Symbol a{"a", "a"};
     Symbol e{"e", "e"};
 
-    std::vector<Production> p{
+    std::list<Production> p{
             Production(ProductionPart({ S }), ProductionPart({ a, a })),
             Production(ProductionPart({ S }), ProductionPart({ b, a }))
     };
-    std::vector<Production> res = algorithm::removeDirectRecursion(p, e, S);
+    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
     std::unordered_set<Production> resSet;
     std::unordered_set<Production> ok;
     for(const Production & prod : res) {
@@ -135,14 +135,14 @@ TEST(removeDirectRecursion, rulesWithRecursionAndWithoutRecursion) {
     Symbol a{"a", "a"};
     Symbol e{"e", "e"};
 
-    std::vector<Production> p{
+    std::list<Production> p{
             Production(ProductionPart({ S }), ProductionPart({ a, a })),
             Production(ProductionPart({ S }), ProductionPart({ b, a })),
             Production(ProductionPart({ S }), ProductionPart({S, b, b })),
             Production(ProductionPart({ S }), ProductionPart({S, a, b })),
             Production(ProductionPart({ S }), ProductionPart({S, a, a }))
     };
-    std::vector<Production> res = algorithm::removeDirectRecursion(p, e, S);
+    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
     std::unordered_set<Production> resSet;
     std::unordered_set<Production> ok{
             Production(ProductionPart({ S }), ProductionPart({ a, a, Ss})),

@@ -67,3 +67,9 @@ size_t std::hash<Production>::operator()(const Production &p) const {
     hash<ProductionPart> h;
     return h(p.left()) + h(p.right());
 }
+
+
+std::ostream& operator<<(std::ostream &stream, const Production &p) {
+    stream << p.left() << " --> " << p.right();
+    return stream;
+}

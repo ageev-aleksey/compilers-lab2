@@ -55,4 +55,6 @@ private:
 };
 
 
+std::ostream& operator<<(std::ostream &stream, const Grammar &g);
+
 #endif //COMPILERS_LAB2_GRAMMAR_H

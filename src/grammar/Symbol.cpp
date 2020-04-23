@@ -65,3 +65,9 @@ size_t std::hash<Symbol>::operator()(const Symbol &s) const {
     hash<std::string> h;
     return h(s.pattern())+h(s.name());
 }
+
+
+std::ostream& operator<<(std::ostream& stream, const Symbol &s) {
+    stream << "<" << s.name() << ">";
+    return stream;
+}

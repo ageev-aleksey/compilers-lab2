@@ -92,3 +92,10 @@ ProductionPart& ProductionPart::operator=(const ProductionPart &p) {
     return *this;
 }
 
+std::ostream& operator<<(std::ostream &stream, const ProductionPart &part) {
+    for(const Symbol &s : part) {
+        stream << s;
+    }
+    return stream;
+}
+

@@ -140,3 +140,14 @@ Grammar Grammar::Builder::build() {
     }
     return *g;
 }
+
+
+std::ostream& operator<<(std::ostream &stream, const Grammar &g) {
+    stream << "Axiom: " << g.axiom() << "\n";
+    stream << "Epsilon: " << g.epsilon() << "\n";
+    stream << "Productions:\n";
+    for(const Production &p : g.productions()) {
+        stream << "-- " << p << "\n";
+    }
+    return stream;
+}

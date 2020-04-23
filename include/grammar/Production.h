@@ -40,4 +40,6 @@ namespace std {
     };
 }
 
+std::ostream& operator<<(std::ostream &stream, const Production &part);
+
 #endif //COMPILERS_LAB2_PRODUCTION_H

@@ -2,6 +2,7 @@
 // Created by nrx on 15.04.2020.
 //
 
+#include <iostream>
 #include "grammar/Grammar.h"
 #include "grammar/GrammarException.h"
 
@@ -117,6 +118,7 @@ void Grammar::Builder::addProduction(Production p) {
 }
 
 Grammar Grammar::Builder::build() {
+    std::cout << *g << std::endl;
     if(g->_axiom == EMPTY_SYMBOL) {
         throw GrammarException("Axiom of Grammar don't set");
     }
@@ -127,13 +129,13 @@ Grammar Grammar::Builder::build() {
     }
 
     for(Production p : g->_productions) {
-        for(Symbol s : p.left()) {
-            if(!(g->isTerminal(s) || g->isNonTerminal(s))) {
+        for(const Symbol &s : p.left()) {
+            if(!(g->isTerminal(s) || g->isNonTerminal(s) || (s == g->epsilon()))) {
                 throw GrammarException("Production contain symbol that don't belong alphabet of grammar");
             }
         }
-        for(Symbol s : p.right()) {
-            if(!(g->isTerminal(s) || g->isNonTerminal(s))) {
+        for(const Symbol &s : p.right()) {
+            if(!(g->isTerminal(s) || g->isNonTerminal(s) || (s == g->epsilon()))) {
                 throw GrammarException("Production contain symbol that don't belong alphabet of grammar");
             }
         }
@@ -145,6 +147,16 @@ Grammar Grammar::Builder::build() {
 std::ostream& operator<<(std::ostream &stream, const Grammar &g) {
     stream << "Axiom: " << g.axiom() << "\n";
     stream << "Epsilon: " << g.epsilon() << "\n";
+    stream << "Terminals: ";
+    for(const Symbol &s : g.terminals()) {
+        stream << s << " ";
+    }
+    stream << "\n";
+    stream << "NonTerminals: ";
+    for(const Symbol &s : g.nonTerminals()) {
+        stream << s << " ";
+    }
+    stream << "\n";
     stream << "Productions:\n";
     for(const Production &p : g.productions()) {
         stream << "-- " << p << "\n";

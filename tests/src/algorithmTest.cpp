@@ -91,14 +91,14 @@ TEST(removeDirectRecursion, oneRecursion) {
         Production(ProductionPart({ S }), ProductionPart({ S, a })),
         Production(ProductionPart({ S }), ProductionPart({ b, a }))
     };
-    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
+    algorithm::removeDirectRecursion({S}, p, e, S);
     std::unordered_set<Production> ok {
         Production(ProductionPart({S}), ProductionPart({b, a, Ss})),
         Production(ProductionPart({Ss}), ProductionPart({ a, Ss })),
         Production(ProductionPart({Ss}), ProductionPart({ e }))
     };
     std::unordered_set<Production> resSet;
-    for(const Production & prod : res) {
+    for(const Production & prod : p) {
         resSet.insert(prod);
     }
 
@@ -115,14 +115,14 @@ TEST(removeDirectRecursion, withoutRecursion) {
             Production(ProductionPart({ S }), ProductionPart({ a, a })),
             Production(ProductionPart({ S }), ProductionPart({ b, a }))
     };
-    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
-    std::unordered_set<Production> resSet;
     std::unordered_set<Production> ok;
-    for(const Production & prod : res) {
-        resSet.insert(prod);
-    }
     for(const Production & prod : p) {
         ok.insert(prod);
+    }
+    algorithm::removeDirectRecursion({S}, p, e, S);
+    std::unordered_set<Production> resSet;
+    for(const Production & prod : p) {
+        resSet.insert(prod);
     }
 
     ASSERT_EQ(resSet, ok);
@@ -142,7 +142,7 @@ TEST(removeDirectRecursion, rulesWithRecursionAndWithoutRecursion) {
             Production(ProductionPart({ S }), ProductionPart({S, a, b })),
             Production(ProductionPart({ S }), ProductionPart({S, a, a }))
     };
-    std::list<Production> res = algorithm::removeDirectRecursion({S}, p, e, S);
+    algorithm::removeDirectRecursion({S}, p, e, S);
     std::unordered_set<Production> resSet;
     std::unordered_set<Production> ok{
             Production(ProductionPart({ S }), ProductionPart({ a, a, Ss})),
@@ -152,7 +152,7 @@ TEST(removeDirectRecursion, rulesWithRecursionAndWithoutRecursion) {
             Production(ProductionPart({ Ss }), ProductionPart({ a, a, Ss })),
             Production(ProductionPart({ Ss }), ProductionPart({ e }))
     };
-    for(const Production & prod : res) {
+    for(const Production & prod : p) {
         resSet.insert(prod);
     }
 
@@ -205,4 +205,10 @@ TEST(deleteRecurionTest, simple) {
 
     Grammar res = algorithm::deleteRecursion(g);
     std::cout << std::endl;
+}
+
+TEST(deleteRecurionTest, simple2) {
+
+
+
 }

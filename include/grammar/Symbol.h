@@ -13,6 +13,7 @@ class Symbol {
 public:
 
     Symbol(const std::string &name,const std::string &pattern);
+    Symbol(const std::string &np);
     Symbol(std::string &&name, std::string &&pattern);
     Symbol(const char name[], const char pattern[]);
     Symbol(const Symbol &s);

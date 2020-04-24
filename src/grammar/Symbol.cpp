@@ -9,8 +9,14 @@ Symbol::Block::Block(std::string &&n, std::string &&p) : name(n), pattern(p)
 Symbol::Block::Block(const std::string &n, const std::string &p) : name(n), pattern(p)
 {}
 
+
 Symbol::Symbol(const std::string &name,const std::string &pattern) {
     data = std::make_shared<Block>(name, pattern);
+}
+
+
+Symbol::Symbol(const std::string &np) {
+    data = std::make_shared<Block>(np, np);
 }
 
 Symbol::Symbol(std::string &&name, std::string &&pattern) {

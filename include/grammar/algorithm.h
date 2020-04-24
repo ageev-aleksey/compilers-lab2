@@ -6,6 +6,7 @@
 #define LABA2_ALGORITHM_H
 #include "grammar/Symbol.h"
 #include "grammar/Grammar.h"
+#include "Graph.h"
 #include <unordered_set>
 #include <list>
 
@@ -13,9 +14,11 @@ namespace algorithm {
     std::unordered_set<Symbol> removeBarrenSymbols(const Grammar &g);
     std::unordered_set<Symbol> removeUnreachableSymbols(const Grammar &g);
 
-    std::list<Production> removeDirectRecursion(const std::unordered_set<Symbol> &nonTerminals, std::list<Production> &prods, const Symbol &epsilon, const Symbol &target);
+    void removeDirectRecursion(const std::unordered_set<Symbol> &nonTerminals, std::list<Production> &prods, const Symbol &epsilon, const Symbol &target);
     Grammar deleteRecursion(const Grammar &g);
     Grammar deleteDummySymbols(const Grammar &g);
+    Graph<Empty, Symbol> buildTreeOfSymbols(const std::vector<std::vector<Symbol>> &sArrays);
+    Grammar leftFactoring(const Grammar &g);
 
 }
 #endif //LABA2_ALGORITHM_H

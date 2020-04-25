@@ -7,6 +7,8 @@
 #include <list>
 #include <iostream>
 #include "Graph.h"
+#include <stack>
+#include <GraphToDOT.h>
 
 bool contain( const std::unordered_set<Symbol> &set, const Symbol &s) {
     return set.find(s) != set.end();
@@ -383,12 +385,178 @@ Graph<Empty, Symbol> algorithm::buildTreeOfSymbols(const std::vector<std::vector
                 continue;
             }
         }
-
+        GraphS::iterator newPosition = graph.addNodeInBack(Empty{});
+        graph.addLink(pos, newPosition, {""});
     }
     return graph;
 }
 
 
+
+//TODO make tests
+Graph<Empty, Symbol>::iterator algorithm::findDeepestForkInTreeSymbols(Graph<Empty, Symbol> &graph) {
+    using Graph_t = Graph<Empty, Symbol>;
+    using NodeItr = Graph<Empty, Symbol>::iterator;
+    std::stack<std::pair<NodeItr, size_t>> stack;
+    std::list<std::pair<NodeItr, size_t>> forks;
+    stack.push({graph.firstNode(), 0});
+    while(!stack.empty()) {
+        std::pair<NodeItr, size_t> p = stack.top();
+        stack.pop();
+        if(p.first.getLinks().size() > 1) {
+            forks.push_back(p);
+        }
+        for(const Graph_t::Link &link : p.first.getLinks()) {
+            stack.push({link.node, p.second+1});
+        }
+    }
+    size_t maxDeep = 0;
+    NodeItr itr = graph.end();
+    for(std::pair<NodeItr, size_t> &f : forks) {
+        if(f.second >= maxDeep) {
+            maxDeep = f.second;
+            itr = f.first;
+        }
+    }
+    return itr;
+}
+//TODO make test
+std::vector<Graph<Empty, Symbol>::iterator> algorithm::buildParenTableOfTree(Graph<Empty, Symbol> &graph) {
+    std::vector<Graph<Empty, Symbol>::iterator> res(graph.getNodes().size(), graph.end());
+    for(auto itr = graph.begin(); itr != graph.end(); itr++) {
+        if(!itr.getLinks().empty()) {
+            for(auto &link: itr.getLinks()) {
+                res[link.node.getIndex()] = itr;
+            }
+        }
+    }
+    return res;
+}
+
+
+std::list<std::vector<Production>::const_iterator> findProductionsByLeft(const Symbol &s, const std::vector<Production> &prods) {
+    std::list<std::vector<Production>::const_iterator> res;
+    for(auto itr = prods.begin(); itr != prods.end(); itr++) {
+        if(itr->left().get(0) == s) {
+            res.push_back(itr);
+        }
+    }
+    return res;
+}
+
+bool prefixCheck(const Production &p, const std::vector<Symbol> &reversPrefix) {
+    if(p.right().size() >= reversPrefix.size()) {
+        auto itr = p.right().begin();
+        for(auto pItr = reversPrefix.crbegin(); pItr != reversPrefix.crend(); pItr++) {
+            if(*itr != *pItr) {
+                return false;
+            }
+            itr++;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+//TODO function generate new Symbol - необходима специальная функция, поскольку создавая сивол без проверки, можно наткнуться на то, тчо созданный символ на самом деле уже используется.
+
+Symbol generateSymbol(const std::unordered_set<Symbol> &set, const Symbol &s) {
+    std::string symbol = s.name();
+    symbol.push_back('\'');
+    Symbol newS = Symbol(symbol);
+    while(contain(set, newS)) {
+        symbol.push_back('\'');
+        newS = Symbol(symbol);
+    }
+    return newS;
+}
+
+
+
 Grammar algorithm::leftFactoring(const Grammar &g) {
-    
+    std::list<Production> newRules;
+    std::unordered_set<Symbol> allSymbols;
+    for(const Production &p : g.productions()) {
+        newRules.push_back(p);
+    }
+    for(const Symbol &p : g.terminals()) {
+        allSymbols.insert(p);
+    }
+    for(const Symbol &p : g.nonTerminals()) {
+        allSymbols.insert(p);
+    }
+
+
+    for(const Symbol &s : g.nonTerminals()) {
+        //TODO WHILE до тех пор пытаться выделить прфеиксы, пока они не перестанут выделятся, при каждом измении правил
+        while (true) {
+            std::list<std::list<Production>::iterator> changeProduction;
+            auto p = findProductionsByLeft(s, newRules);
+            size_t n = p.size();
+            if (n == 1) {
+                break;
+            }
+            std::vector<std::vector<Symbol>> rightParts(n);
+            auto pItr = p.begin();
+            for (size_t i = 0; i < n; i++) {
+                auto &cp = *pItr;
+                //rightParts[i].resize(cp->right().size());
+                std::copy(cp->right().begin(), cp->right().end(), std::back_inserter(rightParts[i]));
+                pItr++;
+            }
+            Graph<Empty, Symbol> graph = buildTreeOfSymbols(rightParts);
+            //std::cout << graphToDOT(graph);
+            Graph<Empty, Symbol>::iterator deepestFork = findDeepestForkInTreeSymbols(graph);
+
+            if (deepestFork == graph.firstNode()) {
+                break;
+            }
+
+            std::vector<Graph<Empty, Symbol>::iterator> parentTable = buildParenTableOfTree(graph);
+            //build prefix
+            Graph<Empty, Symbol>::iterator node = deepestFork;
+            std::vector<Symbol> r_prefix;
+            while (node != graph.firstNode()) {
+                node = parentTable[node.getIndex()];
+                r_prefix.push_back(node.getLinks().begin()->data);
+            }
+            //find rules this prefix
+            for (auto &ruleItr : p) {
+                if (prefixCheck(*ruleItr, r_prefix)) {
+                    changeProduction.push_back(ruleItr);
+                }
+            }
+            //generate new rules
+            Symbol stroke = generateSymbol(allSymbols, s);
+            allSymbols.insert(stroke);
+            for (auto &ruleItr : changeProduction) {
+                //generate rule type: A' -> B
+                std::vector<Symbol> rightPartStrokeRule;
+                std::copy(ruleItr->right().begin() + r_prefix.size(), ruleItr->right().end(),
+                          std::back_inserter(rightPartStrokeRule));
+                if (rightPartStrokeRule.empty()) {
+                    rightPartStrokeRule.push_back(g.epsilon());
+                }
+                newRules.emplace_back(ProductionPart({stroke}), ProductionPart(rightPartStrokeRule));
+                newRules.erase(ruleItr);
+            }
+//        std::vector<Symbol> rightPartWithPrefix(r_prefix.size());
+            std::vector<Symbol> rightPartWithPrefix;
+            std::copy(r_prefix.crbegin(), r_prefix.crend(), std::back_inserter(rightPartWithPrefix));
+            rightPartWithPrefix.push_back(stroke);
+            newRules.emplace_back(ProductionPart({s}), ProductionPart(rightPartWithPrefix));
+        }
+    }
+
+    Grammar::Builder b;
+    b.setEpsilon(g.epsilon());
+    b.setAxiom(g.axiom());
+    for(const Production &p : newRules) {
+        b.addProduction(p);
+        b.addNonTerminal(p.left().get(0));
+    }
+    for(const Symbol &s : g.terminals()) {
+        b.addTerminal(s);
+    }
+    return b.build();
 }

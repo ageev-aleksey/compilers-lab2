@@ -2,7 +2,7 @@
 // Created by nrx on 21.03.2020.
 //
 
-#include "regex/RegexExceptions.h"
+#include "RegexExceptions.h"
 
 GraphException::GraphException(const std::string &msg) : std::logic_error(msg) {
 

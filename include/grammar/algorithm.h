@@ -18,7 +18,10 @@ namespace algorithm {
     Grammar deleteRecursion(const Grammar &g);
     Grammar deleteDummySymbols(const Grammar &g);
     Graph<Empty, Symbol> buildTreeOfSymbols(const std::vector<std::vector<Symbol>> &sArrays);
+    Graph<Empty, Symbol>::iterator findDeepestForkInTreeSymbols(Graph<Empty, Symbol> &graph);
+    std::vector<Graph<Empty, Symbol>::iterator> buildParenTableOfTree(Graph<Empty, Symbol> &graph);
     Grammar leftFactoring(const Grammar &g);
+
 
 }
 #endif //LABA2_ALGORITHM_H

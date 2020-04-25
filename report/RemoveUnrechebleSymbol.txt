@@ -1,0 +1,14 @@
+Axiom: <axiom>
+Epsilon: <>
+Terminals: <b> <a> 
+NonTerminals: <B> <axiom> 
+Productions:
+-- <axiom> --> <a>
+-- <B> --> <b>
+
+Axiom: <axiom>
+Epsilon: <>
+Terminals: <a> 
+NonTerminals: <axiom> 
+Productions:
+-- <axiom> --> <a>

@@ -1,0 +1,88 @@
+Axiom: <A>
+Epsilon: <e>
+Terminals: <b> <a> 
+NonTerminals: <C> <A> <B> 
+Productions:
+-- <A> --> <B><C>
+-- <A> --> <a>
+-- <B> --> <C><A>
+-- <B> --> <A><b>
+-- <C> --> <A><B>
+-- <C> --> <C><C>
+-- <C> --> <a>
+
+(i=0)
+-----
+CurrentNonTerminal: <A>
+-Rules: 
+   --<A> --> <B><C>
+   --<A> --> <a>
+(i=1)
+-----
+CurrentNonTerminal: <C>
+-Rules: 
+   --<C> --> <A><B>
+   --<C> --> <C><C>
+   --<C> --> <a>
+(j=0)
+  -- Processing Rule: <C> --> <A><B>
+   --- substitution rules: 
+    ---- <A> --> <B><C>
+    ---- <A> --> <a>
+   --- Created new Rule: <C> --> <B><C><B>
+   --- Created new Rule: <C> --> <a><B>
+ > detected direct recursion: 
+  - <C> --> <C><C>
+   - created new production: <C'> --> <C><C'>
+   - created new production: <C> --> <a><C'>
+   - created new production: <C> --> <B><C><B><C'>
+   - created new production: <C> --> <a><B><C'>
+(i=2)
+-----
+CurrentNonTerminal: <B>
+-Rules: 
+   --<B> --> <C><A>
+   --<B> --> <A><b>
+(j=0)
+  -- Processing Rule: <B> --> <A><b>
+   --- substitution rules: 
+    ---- <A> --> <B><C>
+    ---- <A> --> <a>
+   --- Created new Rule: <B> --> <B><C><b>
+   --- Created new Rule: <B> --> <a><b>
+(j=1)
+  -- Processing Rule: <B> --> <C><A>
+   --- substitution rules: 
+    ---- <C> --> <a><C'>
+    ---- <C> --> <B><C><B><C'>
+    ---- <C> --> <a><B><C'>
+   --- Created new Rule: <B> --> <a><C'><A>
+   --- Created new Rule: <B> --> <B><C><B><C'><A>
+   --- Created new Rule: <B> --> <a><B><C'><A>
+ > detected direct recursion: 
+  - <B> --> <B><C><b>
+  - <B> --> <B><C><B><C'><A>
+   - created new production: <B'> --> <C><b><B'>
+   - created new production: <B'> --> <C><B><C'><A><B'>
+   - created new production: <B> --> <a><b><B'>
+   - created new production: <B> --> <a><C'><A><B'>
+   - created new production: <B> --> <a><B><C'><A><B'>
+Axiom: <A>
+Epsilon: <e>
+Terminals: <a> <b> 
+NonTerminals: <C> <B'> <A> <B> <C'> 
+Productions:
+-- <A> --> <B><C>
+-- <A> --> <a>
+-- <C'> --> <C><C'>
+-- <C'> --> <e>
+-- <C> --> <a><C'>
+-- <C> --> <B><C><B><C'>
+-- <C> --> <a><B><C'>
+-- <B'> --> <C><b><B'>
+-- <B'> --> <C><B><C'><A><B'>
+-- <B'> --> <e>
+-- <B> --> <a><b><B'>
+-- <B> --> <a><C'><A><B'>
+-- <B> --> <a><B><C'><A><B'>
+

@@ -117,6 +117,16 @@ public:
             return tmp;
         }
 
+        iterator& operator--() {
+            currentNode--;
+            return *this;
+        }
+        iterator operator--(int) {
+            iterator tmp(*this);
+            --(*this);
+            return tmp;
+        }
+
 
     private:
 

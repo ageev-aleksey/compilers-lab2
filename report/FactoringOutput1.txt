@@ -1,0 +1,31 @@
+Axiom: <S>
+Epsilon: <>
+Terminals: <c> <a> <b> 
+NonTerminals: <A> <S> 
+Productions:
+-- <S> --> <a><b><c><A>
+-- <S> --> <a><b><c><c><A>
+-- <S> --> <a><b><A>
+-- <S> --> <a><b><b><A>
+-- <S> --> <b><a><A>
+-- <A> --> <c><b>
+-- <A> --> <c><b><a><c>
+-- <A> --> <c><c>
+
+Axiom: <S>
+Epsilon: <>
+Terminals: <b> <c> <a> 
+NonTerminals: <S''> <A> <S'> <A''> <S> <A'> 
+Productions:
+-- <S> --> <b><a><A>
+-- <A'> --> <>
+-- <A'> --> <a><c>
+-- <A''> --> <c>
+-- <A''> --> <b><A'>
+-- <A> --> <c><A''>
+-- <S'> --> <A>
+-- <S'> --> <c><A>
+-- <S''> --> <A>
+-- <S''> --> <b><A>
+-- <S''> --> <c><S'>
+-- <S> --> <a><b><S''>
